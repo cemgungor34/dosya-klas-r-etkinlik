@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5. Sınıf BTY - Dosya ve Klasör Yönetimi Etkinliği</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #1e293b;
+  }
+  * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  body { margin: 0; padding: 20px; background: var(--bg); color: var(--text); }
+  .container { max-width: 960px; margin: 0 auto; background: var(--card); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); overflow: hidden; }
+  header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  header h1 { margin: 0; font-size: 1.4rem; }
+  header p { margin: 4px 0 0; font-size: 0.9rem; opacity: 0.9; }
+  .score-board { background: rgba(255,255,255,0.15); padding: 10px 18px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; }
+  
+  .tabs { display: flex; background: #e2e8f0; border-bottom: 2px solid #cbd5e1; }
+  .tab-btn { flex: 1; padding: 14px; border: none; background: transparent; font-size: 1rem; font-weight: 600; color: #475569; cursor: pointer; transition: 0.2s; }
+  .tab-btn.active { background: var(--card); color: var(--primary); border-bottom: 3px solid var(--primary); }
+  .tab-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .section { display: none; padding: 28px; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+  .instruction { background: #eff6ff; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 0.95rem; }
+
+  /* Aşama 1: Uzantı Eşleştirme */
+  .ext-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .ext-card { border: 2px solid #e2e8f0; border-radius: 10px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; transition: 0.2s; }
+  .ext-card.correct { border-color: var(--success); background: #f0fdf4; }
+  .ext-card.wrong { border-color: var(--danger); background: #fef2f2; }
+  .ext-title { font-size: 1.2rem; font-weight: bold; color: var(--primary-dark); display: flex; align-items: center; gap: 8px; }
+  .ext-desc { font-size: 0.85rem; color: #64748b; }
+  select { padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.95rem; width: 100%; }
+
+  /* Aşama 2: Klasörleme */
+  .desktop-area { background: #0f172a; color: white; padding: 20px; border-radius: 12px; min-height: 220px; margin-bottom: 20px; }
+  .desktop-title { font-size: 0.85rem; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .files-pool { display: flex; flex-wrap: wrap; gap: 12px; min-height: 80px; }
+  .file-item { background: #1e293b; border: 1px solid #334155; padding: 10px 14px; border-radius: 8px; cursor: grab; user-select: none; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: 0.2s; }
+  .file-item:hover { background: #334155; transform: translateY(-2px); }
+  .file-item.selected { border: 2px solid #38bdf8; background: #0369a1; }
+
+  .folders-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 680px) { .folders-grid { grid-template-columns: repeat(2, 1fr); } }
+  .folder-box { border: 2px dashed #94a3b8; border-radius: 12px; padding: 16px; text-align: center; background: #f8fafc; transition: 0.2s; cursor: pointer; min-height: 140px; }
+  .folder-box:hover, .folder-box.drag-over { border-color: var(--primary); background: #eff6ff; }
+  .folder-icon { font-size: 2.2rem; }
+  .folder-name { font-weight: bold; margin: 6px 0; }
+  .folder-count { font-size: 0.8rem; color: #64748b; }
+
+  /* Aşama 3: Sıkıştırma Deneyi */
+  .usb-box { border: 2px solid #cbd5e1; border-radius: 12px; padding: 20px; background: #f8fafc; margin-bottom: 20px; }
+  .progress-wrap { background: #e2e8f0; height: 28px; border-radius: 14px; overflow: hidden; margin: 12px 0; position: relative; }
+  .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s ease, background 0.3s; }
+  .progress-text { position: absolute; width: 100%; text-align: center; top: 4px; font-weight: bold; font-size: 0.9rem; color: #0f172a; }
+  .sim-files { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+  .sim-file { background: white; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; }
+  .alert-box { padding: 14px; border-radius: 8px; font-weight: 600; margin-top: 12px; display: none; }
+  .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+  .alert-success { background: #dcfce7; color: #166534; border: 1px solid #4ade80; }
+
+  .btn { background: var(--primary); color: white; border: none; padding: 12px 22px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 16px; }
+  .btn:hover { background: var(--primary-dark); }
+  .btn-warning { background: var(--warning); }
+  .btn-warning:hover { background: #b45309; }
+  .btn-success { background: var(--success); }
+  .btn-success:hover { background: #15803d; }
+
+  .final-banner { text-align: center; padding: 30px; background: #f0fdf4; border: 2px solid var(--success); border-radius: 12px; margin-top: 20px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div>
+      <h1>📁 Dosya ve Klasör Yönetimi Atölyesi</h1>
+      <p>5. Sınıf Bilişim Teknolojileri ve Yazılım (BTY.5.1.6)</p>
+    </div>
+    <div class="score-board">Puan: <span id="score">0</span> / 100</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab1" onclick="switchTab(1)">1. Uzantıları Keşfet</button>
+    <button class="tab-btn" id="tab2" onclick="switchTab(2)">2. Masaüstünü Düzenle</button>
+    <button class="tab-btn" id="tab3" onclick="switchTab(3)">3. Verileri Sıkıştır</button>
+  </div>
+
+  <!-- AŞAMA 1 -->
+  <div class="section active" id="sec1">
+    <div class="instruction">
+      <strong>Görev 1 (40 Puan):</strong> Aşağıdaki dosya uzantılarının hangi dosya türüne ait olduğunu açılır listeden seç ve <b>"Cevapları Kontrol Et"</b> butonuna tıkla.
+    </div>
+    <div class="ext-grid" id="extGrid"></div>
+    <button class="btn" onclick="checkExtensions()">Cevapları Kontrol Et</button>
+    <button class="btn btn-success" id="nextTo2" style="display:none; margin-left:10px;" onclick="switchTab(2)">2. Göreve Geç ➔</button>
+  </div>
+
+  <!-- AŞAMA 2 -->
+  <div class="section" id="sec2">
+    <div class="instruction">
+      <strong>Görev 2 (40 Puan):</strong> Karışık masaüstündeki dosyaları sürükleyerek (veya önce dosyaya, sonra ilgili klasöre tıklayarak) doğru klasörlerin içine yerleştir.
+    </div>
+    <div class="desktop-area">
+      <div class="desktop-title">🖥️ Karışık Masaüstü (Kalan Dosya: <span id="remFiles">8</span>)</div>
+      <div class="files-pool" id="filesPool"></div>
+    </div>
+    <div class="folders-grid">
+      <div class="folder-box" data-type="metin" onclick="folderClick('metin')" ondragover="allowDrop(event)" ondrop="dropFile(event, 'metin')">
+        <div class="folder-icon">📄</div>
+        <div class="folder-name">Belgelerim</div>
+        <div class="folder-count" id="cnt-metin">0 dosya</div>
+      </div>
+      <div class="folder-box" data-type="gorsel" onclick="folderClick('gorsel')" ondragover="allowDrop(event)" ondrop="dropFile(event, 'gorsel')">
+        <div class="folder-icon">🖼️</div>
+        <div class="folder-name">Resimlerim</div>
+        <div class="folder-count" id="cnt-gorsel">0 dosya</div>
+      </div>
+      <div class="folder-box" data-type="ses" onclick="folderClick('ses')" ondragover="allowDrop(event)" ondrop="dropFile(event, 'ses')">
+        <div class="folder-icon">🎵</div>
+        <div class="folder-name">Müziklerim</div>
+        <div class="folder-count" id="cnt-ses">0 dosya</div>
+      </div>
+      <div class="folder-box" data-type="arsiv" onclick="folderClick('arsiv')" ondragover="allowDrop(event)" ondrop="dropFile(event, 'arsiv')">
+        <div class="folder-icon">🗜️</div>
+        <div class="folder-name">Sıkıştırılmış Arşiv</div>
+        <div class="folder-count" id="cnt-arsiv">0 dosya</div>
+      </div>
+    </div>
+    <div id="folderFeedback" style="margin-top:12px; font-weight:bold;"></div>
+    <button class="btn btn-success" id="nextTo3" style="display:none;" onclick="switchTab(3)">3. Göreve Geç ➔</button>
+  </div>
+
+  <!-- AŞAMA 3 -->
+  <div class="section" id="sec3">
+    <div class="instruction">
+      <strong>Görev 3 (20 Puan):</strong> Elinde <b>100 MB</b> boş alanı olan bir USB bellek var. Aşağıdaki <b>135 MB</b> boyutundaki proje dosyalarını belleğe kaydetmeyi dene!
+    </div>
+
+    <div class="usb-box">
+      <div><strong>💾 Taşınabilir USB Bellek (Toplam Kapasite: 100 MB)</strong></div>
+      <div class="progress-wrap">
+        <div class="progress-bar" id="usbBar"></div>
+        <div class="progress-text" id="usbText">Kullanılan: 0 MB / 100 MB</div>
+      </div>
+
+      <div class="sim-files" id="simFilesList">
+        <div class="sim-file">📄 Proje_Raporu.docx (45 MB)</div>
+        <div class="sim-file">🖼️ Okul_Fotografi.png (50 MB)</div>
+        <div class="sim-file">🎵 Sunum_Muzigi.mp3 (40 MB)</div>
+      </div>
+      <div><strong>Toplam Dosya Boyutu: <span id="totalSizeText">135 MB</span></strong></div>
+
+      <button class="btn" id="btnCopy" onclick="tryCopyToUsb()">📥 USB Belleğe Kopyala</button>
+      <button class="btn btn-warning" id="btnCompress" style="display:none;" onclick="compressFiles()">🗜️ Dosyaları Sıkıştır (.ZIP Yap)</button>
+
+      <div class="alert-box alert-error" id="errAlert">
+        ⚠️ HATA: Yetersiz Depolama Alanı! 135 MB boyutundaki dosyalar 100 MB'lık USB belleğe sığmıyor. Alan tasarrufu için dosyaları sıkıştırmayı dene!
+      </div>
+      <div class="alert-box alert-success" id="sucAlert">
+        ✅ BAŞARILI! Dosyalar sıkıştırılarak (Proje_Yedek.zip) 135 MB'tan 75 MB'a düşürüldü ve içeriği bozulmadan USB belleğe kaydedildi!
+      </div>
+    </div>
+
+    <div class="final-banner" id="finalBanner">
+      <h2>🎉 Tebrikler! Tüm Görevleri Tamamladın!</h2>
+      <p>Dosya uzantılarını tanıdın, karışık masaüstünü klasörleyerek düzenledin ve sıkıştırma işlemiyle depolama alanından tasarruf sağladın.</p>
+      <p style="font-size:1.3rem; font-weight:bold; color:#15803d;">Toplam Puanın: <span id="finalScore"></span> / 100</p>
+      <button class="btn" onclick="location.reload()">🔄 Etkinliği Yeniden Başlat</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let score = 0;
+  let step1Done = false;
+  let step2Score = 0;
+  let step3Done = false;
+
+  function updateScore(pts) {
+    score += pts;
+    document.getElementById('score').innerText = score;
+  }
+
+  function switchTab(num) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sec' + num).classList.add('active');
+    document.getElementById('tab' + num).classList.add('active');
+  }
+
+  // --- AŞAMA 1 VERİLERİ ---
+  const extensions = [
+    { ext: '.docx / .odt', hint: 'Kelime işlemci belgesi', ans: 'metin' },
+    { ext: '.jpg / .png', hint: 'Fotoğraf ve grafik dosyası', ans: 'gorsel' },
+    { ext: '.mp3 / .ogg', hint: 'Müzik ve ses kaydı', ans: 'ses' },
+    { ext: '.txt', hint: 'Düz not defteri metni', ans: 'metin' },
+    { ext: '.zip / .rar', hint: 'Boyutu küçültülmüş paket dosya', ans: 'arsiv' },
+    { ext: '.mp4 / .avi', hint: 'Hareketli görüntü dosyası', ans: 'video' },
+    { ext: '.pdf', hint: 'Taşınabilir dijital belge formatı', ans: 'metin' },
+    { ext: '.wav', hint: 'Sıkıştırılmamış ses dosyası', ans: 'ses' }
+  ];
+
+  const extGrid = document.getElementById('extGrid');
+  extensions.forEach((item, idx) => {
+    extGrid.innerHTML += `
+      <div class="ext-card" id="card-${idx}">
+        <div>
+          <div class="ext-title">📎 ${item.ext}</div>
+          <div class="ext-desc">${item.hint}</div>
+        </div>
+        <select id="sel-${idx}">
+          <option value="">-- Tür Seçiniz --</option>
+          <option value="metin">Metin / Belge Dosyası</option>
+          <option value="gorsel">Görüntü / Resim Dosyası</option>
+          <option value="ses">Ses / Müzik Dosyası</option>
+          <option value="video">Video Dosyası</option>
+          <option value="arsiv">Sıkıştırılmış Dosya</option>
+        </select>
+      </div>
+    `;
+  });
+
+  function checkExtensions() {
+    if (step1Done) return;
+    let correctCount = 0;
+    extensions.forEach((item, idx) => {
+      const val = document.getElementById('sel-' + idx).value;
+      const card = document.getElementById('card-' + idx);
+      card.classList.remove('correct', 'wrong');
+      if (val === item.ans) {
+        card.classList.add('correct');
+        correctCount++;
+      } else {
+        card.classList.add('wrong');
+      }
+    });
+
+    if (correctCount === extensions.length) {
+      step1Done = true;
+      updateScore(40);
+      document.getElementById('nextTo2').style.display = 'inline-block';
+    } else {
+      alert(extensions.length + ' sorudan ' + correctCount + ' tanesi doğru. Kırmızı kutuları düzeltip tekrar dene!');
+    }
+  }
+
+  // --- AŞAMA 2 VERİLERİ ---
+  const desktopFiles = [
+    { id: 'f1', name: 'Istiklal_Marsi.mp3', type: 'ses', icon: '🎵' },
+    { id: 'f2', name: 'Odevim.docx', type: 'metin', icon: '📄' },
+    { id: 'f3', name: 'Manzara.jpg', type: 'gorsel', icon: '🖼️' },
+    { id: 'f4', name: 'Yedekler.zip', type: 'arsiv', icon: '🗜️' },
+    { id: 'f5', name: 'Notlar.txt', type: 'metin', icon: '📝' },
+    { id: 'f6', name: 'Okul_Logosu.png', type: 'gorsel', icon: '🖼️' },
+    { id: 'f7', name: 'Kayit.ogg', type: 'ses', icon: '🔊' },
+    { id: 'f8', name: 'Sinif_Listesi.odt', type: 'metin', icon: '📄' }
+  ];
+
+  let folderCounts = { metin: 0, gorsel: 0, ses: 0, arsiv: 0 };
+  let selectedFileId = null;
+
+  const filesPool = document.getElementById('filesPool');
+  desktopFiles.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.id = f.id;
+    div.draggable = true;
+    div.dataset.type = f.type;
+    div.innerHTML = `<span>${f.icon}</span> <span>${f.name}</span>`;
+    div.ondragstart = (e) => e.dataTransfer.setData('text/plain', f.id);
+    div.onclick = () => selectFile(f.id);
+    filesPool.appendChild(div);
+  });
+
+  function selectFile(id) {
+    document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
+    selectedFileId = id;
+    document.getElementById(id).classList.add('selected');
+  }
+
+  function allowDrop(e) { e.preventDefault(); }
+
+  function dropFile(e, targetType) {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('text/plain');
+    processMove(id, targetType);
+  }
+
+  function folderClick(targetType) {
+    if (selectedFileId) {
+      processMove(selectedFileId, targetType);
+    }
+  }
+
+  function processMove(fileId, targetType) {
+    const el = document.getElementById(fileId);
+    if (!el) return;
+    const feedback = document.getElementById('folderFeedback');
+    if (el.dataset.type === targetType) {
+      el.remove();
+      selectedFileId = null;
+      folderCounts[targetType]++;
+      document.getElementById('cnt-' + targetType).innerText = folderCounts[targetType] + ' dosya';
+      updateScore(5);
+      const rem = document.querySelectorAll('.file-item').length;
+      document.getElementById('remFiles').innerText = rem;
+      feedback.style.color = '#16a34a';
+      feedback.innerText = '✔ Doğru klasöre yerleştirdin!';
+      if (rem === 0) {
+        feedback.innerText = '🎉 Harika! Masaüstündeki tüm dosyalar düzenlendi.';
+        document.getElementById('nextTo3').style.display = 'inline-block';
+      }
+    } else {
+      feedback.style.color = '#dc2626';
+      feedback.innerText = '✖ Bu dosya uzantısı seçtiğin klasöre ait değil, tekrar dene!';
+    }
+  }
+
+  // --- AŞAMA 3 SIKIŞTIRMA ---
+  let isCompressed = false;
+
+  function tryCopyToUsb() {
+    const bar = document.getElementById('usbBar');
+    const txt = document.getElementById('usbText');
+    const err = document.getElementById('errAlert');
+    const suc = document.getElementById('sucAlert');
+
+    if (!isCompressed) {
+      bar.style.width = '100%';
+      bar.style.background = '#dc2626';
+      txt.innerText = 'HATA: 135 MB / 100 MB (Alan Yetersiz!)';
+      err.style.display = 'block';
+      document.getElementById('btnCompress').style.display = 'inline-block';
+    } else {
+      bar.style.width = '75%';
+      bar.style.background = '#16a34a';
+      txt.innerText = 'Kullanılan: 75 MB / 100 MB (25 MB Boş)';
+      err.style.display = 'none';
+      suc.style.display = 'block';
+      document.getElementById('btnCopy').disabled = true;
+      document.getElementById('btnCompress').disabled = true;
+      if (!step3Done) {
+        step3Done = true;
+        updateScore(20);
+        document.getElementById('finalScore').innerText = score;
+        document.getElementById('finalBanner').style.display = 'block';
+      }
+    }
+  }
+
+  function compressFiles() {
+    isCompressed = true;
+    document.getElementById('simFilesList').innerHTML = `
+      <div class="sim-file" style="border-color:#d97706; background:#fffbeb;">
+        🗜️ <strong>Proje_Yedek.zip (75 MB)</strong> — <em>3 dosya sıkıştırıldı</em>
+      </div>
+    `;
+    document.getElementById('totalSizeText').innerText = '75 MB (Sıkıştırılmış)';
+    document.getElementById('errAlert').style.display = 'none';
+    alert('Dosyalar sıkıştırıldı ve boyutu 135 MB\'tan 75 MB\'a düştü! Şimdi "USB Belleğe Kopyala" butonuna tekrar tıkla.');
+  }
+</script>
+</body>
+</html>
